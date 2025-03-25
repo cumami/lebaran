@@ -4,17 +4,66 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Upload Twibbon</title>
-    <link rel="icon" href="icon.png" sizes="192x192" />
     <style>
-        body { text-align: center; font-family: Arial, sans-serif; }
-        canvas { margin-top: 10px; max-width: 100%; touch-action: none; }
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #2193b0, #6dd5ed);
+            color: white;
+            text-align: center;
+        }
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            backdrop-filter: blur(10px);
+            width: 90%;
+            max-width: 400px;
+        }
+        canvas {
+            width: 100%;
+            max-width: 100%;
+            touch-action: none;
+            background: white;
+            border-radius: 10px;
+        }
+        input[type="file"] {
+            margin: 10px 0;
+            padding: 8px;
+            border: none;
+            border-radius: 5px;
+            background: white;
+            color: #333;
+            cursor: pointer;
+        }
+        button {
+            background: #ff9800;
+            border: none;
+            padding: 10px 15px;
+            color: white;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #e68900;
+        }
     </style>
 </head>
 <body>
-    <h2>Upload Twibbon</h2>
-    <input type="file" id="uploadImage" accept="image/*"><br><br>
-    <canvas id="canvas"></canvas><br>
-    <button onclick="downloadImage()">Download</button>
+    <div class="container">
+        <h2>Upload Twibbon</h2>
+        <input type="file" id="uploadImage" accept="image/*"><br><br>
+        <canvas id="canvas"></canvas><br>
+        <button onclick="downloadImage()">Download</button>
+    </div>
     
     <script>
         const uploadImage = document.getElementById('uploadImage');
