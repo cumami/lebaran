@@ -77,17 +77,31 @@
             background: #a0a0a0;
             cursor: not-allowed;
         }
+        .instructions {
+            margin-top: 15px;
+            font-size: 14px;
+            text-align: left;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Twibbon Lebaran</h2>
+        <h2>Twibbon Lebaran</h2><hr>
         <div class="upload-wrapper">
             <label for="uploadImage">Pilih Foto</label>
             <input type="file" id="uploadImage" accept="image/*">
         </div>
         <canvas id="canvas"></canvas><br><br>
         <button id="downloadButton" onclick="downloadImage()" disabled>Download</button>
+        <div class="instructions">
+            <h3>Tata Cara Penggunaan:</h3>
+            <ol>
+                <li>Klik tombol "Pilih Foto" untuk mengunggah gambar Anda.</li>
+                <li>Gunakan gerakan zoom (cubit) untuk menyesuaikan ukuran foto.</li>
+                <li>Seret gambar untuk menyesuaikan posisi di dalam twibbon.</li>
+                <li>Jika sudah sesuai, klik tombol "Download" untuk menyimpan hasilnya.</li>
+            </ol>
+        </div>
     </div>
     
     <script>
