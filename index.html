@@ -1,200 +1,121 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twibbon Lebaran - BAS</title>
+    <title>Upload Twibbon</title>
     <link rel="icon" href="icon.png" sizes="192x192" />
     <style>
-        body {
-            text-align: center;
-            font-family: Arial, sans-serif;
-            background-color: #f8f9fa;
-        }
-        #canvas-container {
-            position: relative;
-            display: inline-block;
-            cursor: grab;
-        }
-        canvas {
-            border: 2px solid #000;
-            width: 300px;
-            height: auto;
-        }
-        .btn {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background-color: #28a745;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            transition: background 0.3s;
-        }
-        .btn:hover {
-            background-color: #218838;
-        }
-        .btn:disabled {
-            background-color: #6c757d;
-            cursor: not-allowed;
-        }
-        input[type="file"] {
-            display: none;
-        }
-        label {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            transition: background 0.3s;
-        }
-        label:hover {
-            background-color: #0056b3;
-        }
+        body { text-align: center; font-family: Arial, sans-serif; }
+        canvas { margin-top: 10px; max-width: 100%; touch-action: none; }
     </style>
 </head>
 <body>
-    <h2>Upload Foto Disini</h2>
-    <input type="file" id="upload" accept="image/*">
-    <label for="upload">Pilih Foto</label>
-    <br><br>
-    <div id="canvas-container">
-        <canvas id="canvas"></canvas>
-    </div>
-    <br>
-    <button id="downloadBtn" class="btn" onclick="downloadImage()" disabled>Download Twibbon</button>
-
+    <h2>Upload Twibbon</h2>
+    <input type="file" id="uploadImage" accept="image/*"><br><br>
+    <canvas id="canvas"></canvas><br>
+    <button onclick="downloadImage()">Download</button>
+    
     <script>
-        const twibbonSrc = "twibbon.png";
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        const twibbon = new Image();
-        twibbon.src = twibbonSrc;
+        const uploadImage = document.getElementById('uploadImage');
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
 
-        let img = new Image();
-        let imgX = 0, imgY = 0;
-        let imgScale = 1;
+        let userImage = new Image();
+        let twibbonImage = new Image();
+        twibbonImage.src = 'twibbon.png';
+
+        let scale = 1;
+        let lastScale = 1;
+        let startX = 0, startY = 0;
+        let lastX = 0, lastY = 0;
         let isDragging = false;
-        let offsetX, offsetY;
 
-        let lastTouchDistance = 0; // Untuk pinch-to-zoom
-
-        twibbon.onload = () => {
-            canvas.width = 800;
-            canvas.height = 800;
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
-        };
-
-        document.getElementById("upload").addEventListener("change", function (event) {
-            const file = event.target.files[0];
-            if (!file) return;
-            
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                img.src = e.target.result;
-                img.onload = function () {
-                    let scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                    imgScale = scale;
-                    imgX = (canvas.width - img.width * imgScale) / 2;
-                    imgY = (canvas.height - img.height * imgScale) / 2;
-                    drawCanvas();
-                    document.getElementById("downloadBtn").disabled = false;
-                };
-            };
-            reader.readAsDataURL(file);
-        });
-
-        function drawCanvas() {
+        function drawImages() {
+            canvas.width = twibbonImage.width;
+            canvas.height = twibbonImage.height;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, imgX, imgY, img.width * imgScale, img.height * imgScale);
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
+            ctx.save();
+            ctx.translate(startX, startY);
+            ctx.scale(scale, scale);
+            ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
+            ctx.restore();
+            ctx.drawImage(twibbonImage, 0, 0, canvas.width, canvas.height);
         }
 
-        // **Desktop: Dragging**
-        document.getElementById("canvas-container").addEventListener("mousedown", function (e) {
-            offsetX = e.offsetX - imgX;
-            offsetY = e.offsetY - imgY;
-            isDragging = true;
-        });
-
-        document.addEventListener("mousemove", function (e) {
-            if (isDragging) {
-                imgX = e.offsetX - offsetX;
-                imgY = e.offsetY - offsetY;
-                drawCanvas();
+        uploadImage.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    userImage.src = e.target.result;
+                    userImage.onload = drawImages;
+                };
+                reader.readAsDataURL(file);
             }
         });
-
-        document.addEventListener("mouseup", function () {
-            isDragging = false;
-        });
-
-        // **Zoom dengan scroll di desktop**
-        canvas.addEventListener("wheel", function (e) {
-            e.preventDefault();
-            const scaleAmount = 0.1;
-            imgScale += e.deltaY < 0 ? scaleAmount : -scaleAmount;
-            imgScale = Math.max(0.1, imgScale);
-            drawCanvas();
-        });
-
-        // **Mobile: Dragging dengan sentuhan**
-        canvas.addEventListener("touchstart", function (e) {
-            if (e.touches.length === 1) {
-                let touch = e.touches[0];
-                offsetX = touch.clientX - imgX;
-                offsetY = touch.clientY - imgY;
-                isDragging = true;
-            }
-            if (e.touches.length === 2) {
-                lastTouchDistance = getTouchDistance(e.touches);
-            }
-        });
-
-        canvas.addEventListener("touchmove", function (e) {
-            e.preventDefault();
-            if (e.touches.length === 1 && isDragging) {
-                let touch = e.touches[0];
-                imgX = touch.clientX - offsetX;
-                imgY = touch.clientY - offsetY;
-                drawCanvas();
-            }
-            if (e.touches.length === 2) {
-                let newTouchDistance = getTouchDistance(e.touches);
-                let scaleAmount = newTouchDistance / lastTouchDistance;
-                imgScale *= scaleAmount;
-                imgScale = Math.max(0.1, imgScale);
-                lastTouchDistance = newTouchDistance;
-                drawCanvas();
-            }
-        });
-
-        canvas.addEventListener("touchend", function () {
-            isDragging = false;
-            lastTouchDistance = 0;
-        });
-
-        function getTouchDistance(touches) {
-            let dx = touches[0].clientX - touches[1].clientX;
-            let dy = touches[0].clientY - touches[1].clientY;
-            return Math.sqrt(dx * dx + dy * dy);
-        }
 
         function downloadImage() {
-            const link = document.createElement("a");
-            link.download = "Twibbon-Lebaran.png";
-            link.href = canvas.toDataURL("image/png");
+            const link = document.createElement('a');
+            link.download = 'twibbonized_image.png';
+            link.href = canvas.toDataURL();
             link.click();
         }
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDragging = true;
+            lastX = e.offsetX;
+            lastY = e.offsetY;
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                startX += e.offsetX - lastX;
+                startY += e.offsetY - lastY;
+                lastX = e.offsetX;
+                lastY = e.offsetY;
+                drawImages();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => isDragging = false);
+        canvas.addEventListener('mouseout', () => isDragging = false);
+
+        canvas.addEventListener('wheel', (e) => {
+            e.preventDefault();
+            let zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
+            scale *= zoomFactor;
+            drawImages();
+        });
+
+        canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length === 2) {
+                lastScale = scale;
+            } else {
+                isDragging = true;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+            }
+        });
+
+        canvas.addEventListener('touchmove', (e) => {
+            e.preventDefault();
+            if (e.touches.length === 2) {
+                let touch1 = e.touches[0];
+                let touch2 = e.touches[1];
+                let distance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                scale = lastScale * (distance / 200);
+                drawImages();
+            } else if (isDragging) {
+                startX += e.touches[0].clientX - lastX;
+                startY += e.touches[0].clientY - lastY;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+                drawImages();
+            }
+        });
+
+        canvas.addEventListener('touchend', () => isDragging = false);
     </script>
 </body>
 </html>
