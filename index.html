@@ -2,9 +2,8 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Twibbon Maker</title>
-    <link rel="icon" href="icon.png" sizes="192x192" />
     <style>
         body {
             background-color: #2f81ff;
@@ -25,6 +24,7 @@
             max-width: 400px;
             height: auto;
             border: 2px solid #ddd;
+            touch-action: none;
         }
         input[type="file"] {
             display: none;
@@ -56,7 +56,7 @@
 </head>
 <body>
     <div class="container">
-        <h2>Twibbon Lebaran</h2>
+        <h2>Buat Twibbon</h2>
         <canvas id="canvas" width="1080" height="1080"></canvas>
         <br>
         <label for="upload" class="upload-label">
@@ -65,7 +65,7 @@
         <input type="file" id="upload" accept="image/*">
         <br>
         <button id="download" class="download-btn">
-           Unduh Gambar
+            Unduh Gambar
         </button>
     </div>
     <script>
@@ -75,7 +75,7 @@
         const download = document.getElementById("download");
         let img = new Image();
         let twibbon = new Image();
-        let scale = 1, x = 0, y = 0;
+        let scale = 1, x = 0, y = 0, startX, startY, isDragging = false;
 
         twibbon.src = "twibbon.png";
         twibbon.onload = () => {
@@ -85,7 +85,6 @@
         upload.addEventListener("change", (e) => {
             const file = e.target.files[0];
             if (!file) return;
-            
             const reader = new FileReader();
             reader.onload = (event) => {
                 img.src = event.target.result;
@@ -94,11 +93,15 @@
         });
 
         img.onload = () => {
+            updateCanvas();
+            download.style.display = "block";
+        };
+
+        function updateCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             ctx.drawImage(img, x, y, canvas.width * scale, canvas.height * scale);
             ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
-            download.style.display = "block";
-        };
+        }
 
         canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
@@ -107,31 +110,37 @@
             updateCanvas();
         });
 
-        let isDragging = false;
-        let startX, startY;
-
-        canvas.addEventListener("mousedown", (e) => {
-            isDragging = true;
-            startX = e.offsetX - x;
-            startY = e.offsetY - y;
+        canvas.addEventListener("touchstart", (e) => {
+            if (e.touches.length === 1) {
+                isDragging = true;
+                startX = e.touches[0].clientX - x;
+                startY = e.touches[0].clientY - y;
+            }
         });
 
-        canvas.addEventListener("mousemove", (e) => {
-            if (!isDragging) return;
-            x = e.offsetX - startX;
-            y = e.offsetY - startY;
-            updateCanvas();
+        canvas.addEventListener("touchmove", (e) => {
+            if (isDragging && e.touches.length === 1) {
+                x = e.touches[0].clientX - startX;
+                y = e.touches[0].clientY - startY;
+                updateCanvas();
+            }
+
+            if (e.touches.length === 2) {
+                let touch1 = e.touches[0];
+                let touch2 = e.touches[1];
+                let dist = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
+                if (!canvas.lastDist) canvas.lastDist = dist;
+                scale *= dist / canvas.lastDist;
+                scale = Math.min(Math.max(0.5, scale), 2);
+                canvas.lastDist = dist;
+                updateCanvas();
+            }
         });
 
-        canvas.addEventListener("mouseup", () => {
+        canvas.addEventListener("touchend", () => {
             isDragging = false;
+            canvas.lastDist = null;
         });
-
-        function updateCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, x, y, canvas.width * scale, canvas.height * scale);
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
-        }
 
         download.addEventListener("click", () => {
             const link = document.createElement("a");
