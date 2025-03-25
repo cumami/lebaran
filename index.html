@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
     <title>Upload Twibbon</title>
     <style>
         body {
@@ -31,6 +31,7 @@
             max-width: 100%;
             background: white;
             border-radius: 10px;
+            touch-action: none;
         }
         input[type="file"] {
             margin: 10px 0;
@@ -73,12 +74,21 @@
         let twibbonImage = new Image();
         twibbonImage.src = 'twibbon.png';
         
+        let scale = 1;
+        let offsetX = 0, offsetY = 0;
+        let isDragging = false;
+        let lastX, lastY;
+        
         function drawImages() {
             canvas.width = 400;
             canvas.height = 400;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             if (userImage.src) {
+                ctx.save();
+                ctx.translate(offsetX, offsetY);
+                ctx.scale(scale, scale);
                 ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
+                ctx.restore();
             }
             ctx.drawImage(twibbonImage, 0, 0, canvas.width, canvas.height);
         }
@@ -103,6 +113,34 @@
             link.href = canvas.toDataURL();
             link.click();
         }
+
+        canvas.addEventListener("wheel", function(event) {
+            event.preventDefault();
+            let scaleAmount = event.deltaY * -0.001;
+            scale += scaleAmount;
+            scale = Math.min(Math.max(0.5, scale), 2);
+            drawImages();
+        });
+
+        canvas.addEventListener("pointerdown", function(event) {
+            isDragging = true;
+            lastX = event.clientX;
+            lastY = event.clientY;
+        });
+
+        canvas.addEventListener("pointermove", function(event) {
+            if (isDragging) {
+                offsetX += event.clientX - lastX;
+                offsetY += event.clientY - lastY;
+                lastX = event.clientX;
+                lastY = event.clientY;
+                drawImages();
+            }
+        });
+
+        canvas.addEventListener("pointerup", function() {
+            isDragging = false;
+        });
     </script>
 </body>
 </html>
