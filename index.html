@@ -26,6 +26,12 @@
             width: 90%;
             max-width: 400px;
         }
+        #twibbon-preview {
+            width: 100%;
+            max-width: 100%;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
         canvas {
             width: 100%;
             max-width: 100%;
@@ -60,6 +66,7 @@
 <body>
     <div class="container">
         <h2>Upload Twibbon</h2>
+        <img id="twibbon-preview" src="twibbon.png" alt="Twibbon Preview">
         <input type="file" id="uploadImage" accept="image/*"><br><br>
         <canvas id="canvas"></canvas><br>
         <button onclick="downloadImage()">Download</button>
