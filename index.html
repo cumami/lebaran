@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>Twibbon Kita</title>
+    <title>Upload Twibbon</title>
     <style>
         body {
             display: flex;
@@ -14,17 +14,20 @@
             margin: 0;
             font-family: Arial, sans-serif;
             background: #2f81ff;
-            color: #fff;
+            color: #000;
             text-align: center;
         }
         .container {
-            background: #FFF;
+            background: #ffffff;
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
             backdrop-filter: blur(10px);
             width: 90%;
             max-width: 400px;
+        }
+        h1, h2, h3, h4, h5 {
+            color: #000;
         }
         canvas {
             width: 100%;
@@ -55,23 +58,27 @@
         button:hover {
             background: #0073e6;
         }
-        h2,h5{color:#000;}
+        button:disabled {
+            background: #a0a0a0;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
     <div class="container">
-        <h2>Twibbon Kita</h2><br>
-        <h5>Upload Foto Kamu Terlebih Dahulu</h5>
-        <input type="file" id="uploadImage" accept="image/*"><br>
+        <h2>Twibbon Kita</h2><hr>
+        <h5>Upload Foto Disini</h5>
+        <input type="file" id="uploadImage" accept="image/*">
         <canvas id="canvas"></canvas><br><br>
         <br><br>
-        <button onclick="downloadImage()">Download</button>
+        <button id="downloadButton" onclick="downloadImage()" disabled>Download</button>
     </div>
     
     <script>
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
         const uploadImage = document.getElementById('uploadImage');
+        const downloadButton = document.getElementById('downloadButton');
         
         let userImage = new Image();
         let twibbonImage = new Image();
@@ -104,7 +111,10 @@
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     userImage.src = e.target.result;
-                    userImage.onload = drawImages;
+                    userImage.onload = function() {
+                        drawImages();
+                        downloadButton.disabled = false; // Aktifkan tombol download
+                    };
                 };
                 reader.readAsDataURL(file);
             }
