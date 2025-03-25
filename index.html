@@ -26,12 +26,6 @@
             width: 90%;
             max-width: 400px;
         }
-        #twibbon-preview {
-            width: 100%;
-            max-width: 100%;
-            border-radius: 10px;
-            margin-bottom: 10px;
-        }
         canvas {
             width: 100%;
             max-width: 100%;
@@ -66,7 +60,6 @@
 <body>
     <div class="container">
         <h2>Upload Twibbon</h2>
-        <img id="twibbon-preview" src="twibbon.png" alt="Twibbon Preview">
         <input type="file" id="uploadImage" accept="image/*"><br><br>
         <canvas id="canvas"></canvas><br>
         <button onclick="downloadImage()">Download</button>
@@ -82,7 +75,6 @@
         twibbonImage.src = 'twibbon.png';
 
         let scale = 1;
-        let lastScale = 1;
         let startX = 0, startY = 0;
         let lastX = 0, lastY = 0;
         let isDragging = false;
@@ -91,13 +83,13 @@
             canvas.width = twibbonImage.width;
             canvas.height = twibbonImage.height;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.save();
-            ctx.translate(startX, startY);
-            ctx.scale(scale, scale);
-            ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
-            ctx.restore();
             ctx.drawImage(twibbonImage, 0, 0, canvas.width, canvas.height);
+            if (userImage.src) {
+                ctx.drawImage(userImage, startX, startY, canvas.width * scale, canvas.height * scale);
+            }
         }
+
+        twibbonImage.onload = drawImages;
 
         uploadImage.addEventListener('change', function(event) {
             const file = event.target.files[0];
@@ -117,61 +109,6 @@
             link.href = canvas.toDataURL();
             link.click();
         }
-
-        canvas.addEventListener('mousedown', (e) => {
-            isDragging = true;
-            lastX = e.offsetX;
-            lastY = e.offsetY;
-        });
-
-        canvas.addEventListener('mousemove', (e) => {
-            if (isDragging) {
-                startX += e.offsetX - lastX;
-                startY += e.offsetY - lastY;
-                lastX = e.offsetX;
-                lastY = e.offsetY;
-                drawImages();
-            }
-        });
-
-        canvas.addEventListener('mouseup', () => isDragging = false);
-        canvas.addEventListener('mouseout', () => isDragging = false);
-
-        canvas.addEventListener('wheel', (e) => {
-            e.preventDefault();
-            let zoomFactor = e.deltaY > 0 ? 0.95 : 1.05;
-            scale *= zoomFactor;
-            drawImages();
-        });
-
-        canvas.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                lastScale = scale;
-            } else {
-                isDragging = true;
-                lastX = e.touches[0].clientX;
-                lastY = e.touches[0].clientY;
-            }
-        });
-
-        canvas.addEventListener('touchmove', (e) => {
-            e.preventDefault();
-            if (e.touches.length === 2) {
-                let touch1 = e.touches[0];
-                let touch2 = e.touches[1];
-                let distance = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-                scale = lastScale * (distance / 200);
-                drawImages();
-            } else if (isDragging) {
-                startX += e.touches[0].clientX - lastX;
-                startY += e.touches[0].clientY - lastY;
-                lastX = e.touches[0].clientX;
-                lastY = e.touches[0].clientY;
-                drawImages();
-            }
-        });
-
-        canvas.addEventListener('touchend', () => isDragging = false);
     </script>
 </body>
 </html>
