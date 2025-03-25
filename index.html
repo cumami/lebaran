@@ -13,12 +13,12 @@
             height: 100vh;
             margin: 0;
             font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #2193b0, #6dd5ed);
-            color: white;
+            background: #87CEEB;
+            color: #fff;
             text-align: center;
         }
         .container {
-            background: rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.2);
             padding: 20px;
             border-radius: 10px;
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
@@ -29,7 +29,6 @@
         canvas {
             width: 100%;
             max-width: 100%;
-            touch-action: none;
             background: white;
             border-radius: 10px;
         }
@@ -43,7 +42,7 @@
             cursor: pointer;
         }
         button {
-            background: #ff9800;
+            background: #1E90FF;
             border: none;
             padding: 10px 15px;
             color: white;
@@ -53,40 +52,35 @@
             transition: background 0.3s;
         }
         button:hover {
-            background: #e68900;
+            background: #0073e6;
         }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Upload Twibbon</h2>
+        <canvas id="canvas"></canvas><br><br>
         <input type="file" id="uploadImage" accept="image/*"><br><br>
-        <canvas id="canvas"></canvas><br>
         <button onclick="downloadImage()">Download</button>
     </div>
     
     <script>
-        const uploadImage = document.getElementById('uploadImage');
         const canvas = document.getElementById('canvas');
         const ctx = canvas.getContext('2d');
-
+        const uploadImage = document.getElementById('uploadImage');
+        
         let userImage = new Image();
         let twibbonImage = new Image();
         twibbonImage.src = 'twibbon.png';
-
-        let scale = 1;
-        let startX = 0, startY = 0;
-        let lastX = 0, lastY = 0;
-        let isDragging = false;
-
+        
         function drawImages() {
-            canvas.width = twibbonImage.width;
-            canvas.height = twibbonImage.height;
+            canvas.width = 400;
+            canvas.height = 400;
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(twibbonImage, 0, 0, canvas.width, canvas.height);
             if (userImage.src) {
-                ctx.drawImage(userImage, startX, startY, canvas.width * scale, canvas.height * scale);
+                ctx.drawImage(userImage, 0, 0, canvas.width, canvas.height);
             }
+            ctx.drawImage(twibbonImage, 0, 0, canvas.width, canvas.height);
         }
 
         twibbonImage.onload = drawImages;
