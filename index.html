@@ -53,6 +53,22 @@
             background: gray;
             cursor: not-allowed;
         }
+	label {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 16px;
+            font-weight: bold;
+            color: white;
+            background-color: #007bff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 10px;
+            transition: background 0.3s;
+        }
+        label:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
@@ -66,8 +82,7 @@
 
         <!--<canvas id="twibbonCanvas"></canvas>-->
         	<input type="file" id="upload" accept="image/*">
-    		<!--<label for="upload">Pilih Foto</label>-->
-		<button id="upload" class="upload-btn">Pilih Foto</button>
+    		<label for="upload">Pilih Foto</label>
         	<div class="buttons">
            		<button id="downloadBtn" class="download-btn" onclick="downloadImage()" disabled>Download Twibbon</button>
            		<button id="refreshBtn" class="refresh-btn" onclick="location.reload()">Refresh</button>
