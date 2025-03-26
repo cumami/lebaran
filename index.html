@@ -46,7 +46,7 @@
             color: white;
             font-size: 16px;
         }
-        .upload-btn { background: #1976d2; }
+        label { background: #1976d2; }
         .download-btn { background: #ff9800; }
         .refresh-btn { background: #4caf50; }
         button:disabled {
@@ -66,8 +66,7 @@
 
         <!--<canvas id="twibbonCanvas"></canvas>-->
         	<input type="file" id="upload" accept="image/*">
-   		<label class="upload-btn" for="upload">Pilih Foto</label>
-
+    		<label for="upload">Pilih Foto</label>
         	<div class="buttons">
            		<button id="downloadBtn" class="download-btn" onclick="downloadImage()" disabled>Download Twibbon</button>
            		<button id="refreshBtn" class="refresh-btn" onclick="location.reload()">Refresh</button>
