@@ -2,151 +2,136 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Twibbon Maker</title>
     <style>
         body {
-            background-color: #2f81ff;
-            font-family: Arial, sans-serif;
-            text-align: center;
+            background-color: #1a237e;
             color: #000;
+            font-family: Arial, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
         }
         .container {
-            background-color: #ffffff;
+            background: #fff;
             padding: 20px;
-            margin: 20px auto;
             border-radius: 10px;
-            box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            width: 90%;
             max-width: 400px;
         }
         canvas {
             width: 100%;
-            max-width: 400px;
-            height: auto;
-            border: 2px solid #ddd;
-            touch-action: none;
+            max-width: 300px;
+            background: transparent;
         }
-        input[type="file"] {
-            display: none;
-        }
-        .upload-label {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #2f81ff;
+        .btn {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: none;
+            border-radius: 5px;
             color: #fff;
-            padding: 10px;
-            border-radius: 5px;
+            font-size: 16px;
             cursor: pointer;
         }
-        .upload-label img {
-            width: 20px;
-            margin-right: 10px;
-        }
-        .download-btn {
-            display: none;
-            background: #ff922a;
-            color: white;
-            padding: 10px;
-            border-radius: 5px;
-            cursor: pointer;
-            margin-top: 10px;
-        }
+        .btn-upload { background: #007bff; }
+        .btn-download { background: #ff9800; }
+        .btn-refresh { background: #4caf50; }
+        .btn:disabled { background: #ccc; cursor: not-allowed; }
     </style>
 </head>
 <body>
     <div class="container">
         <h2>Twibbon Maker</h2>
-        <canvas id="canvas" width="1080" height="1080"></canvas>
-        <br>
-        <label for="upload" class="upload-label">
-            Pilih Foto
-        </label>
-        <input type="file" id="upload" accept="image/*">
-        <br>
-        <button id="download" class="download-btn">
-            Unduh Gambar
-        </button><br>
-        <h5>© 2025 Created with Love</h5>
+        <canvas id="twibbonCanvas"></canvas>
+        <input type="file" id="upload" accept="image/*" hidden>
+        <button class="btn btn-upload" id="uploadBtn">Upload Foto</button>
+        <button class="btn btn-download" id="downloadBtn" disabled>Download</button>
+        <button class="btn btn-refresh" onclick="location.reload()">Refresh</button>
     </div>
     <script>
-        const canvas = document.getElementById("canvas");
+        const canvas = document.getElementById("twibbonCanvas");
         const ctx = canvas.getContext("2d");
-        const upload = document.getElementById("upload");
-        const download = document.getElementById("download");
-        let img = new Image();
-        let twibbon = new Image();
-        let scale = 1, x = 0, y = 0, startX, startY, isDragging = false;
-
+        const uploadInput = document.getElementById("upload");
+        const uploadBtn = document.getElementById("uploadBtn");
+        const downloadBtn = document.getElementById("downloadBtn");
+        let image = new Image();
+        let scale = 1, x = 0, y = 0;
+        
+        const twibbon = new Image();
         twibbon.src = "twibbon.png";
         twibbon.onload = () => {
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
+            canvas.width = twibbon.width;
+            canvas.height = twibbon.height;
+            ctx.drawImage(twibbon, 0, 0);
         };
 
-        upload.addEventListener("change", (e) => {
+        uploadBtn.addEventListener("click", () => uploadInput.click());
+
+        uploadInput.addEventListener("change", (e) => {
             const file = e.target.files[0];
-            if (!file) return;
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                img.src = event.target.result;
-            };
-            reader.readAsDataURL(file);
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    image.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
-        img.onload = () => {
-            updateCanvas();
-            download.style.display = "block";
+        image.onload = () => {
+            scale = 1; x = 0; y = 0;
+            drawCanvas();
+            uploadBtn.disabled = true;
+            downloadBtn.disabled = false;
         };
 
-        function updateCanvas() {
+        function drawCanvas() {
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, x, y, canvas.width * scale, canvas.height * scale);
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
+            ctx.drawImage(image, x, y, image.width * scale, image.height * scale);
+            ctx.drawImage(twibbon, 0, 0);
         }
+
+        let isDragging = false;
+        let lastX, lastY;
+
+        canvas.addEventListener("touchstart", (e) => {
+            isDragging = true;
+            lastX = e.touches[0].clientX;
+            lastY = e.touches[0].clientY;
+        });
+
+        canvas.addEventListener("touchmove", (e) => {
+            if (isDragging) {
+                let deltaX = e.touches[0].clientX - lastX;
+                let deltaY = e.touches[0].clientY - lastY;
+                x += deltaX;
+                y += deltaY;
+                lastX = e.touches[0].clientX;
+                lastY = e.touches[0].clientY;
+                drawCanvas();
+            }
+        });
+
+        canvas.addEventListener("touchend", () => isDragging = false);
 
         canvas.addEventListener("wheel", (e) => {
             e.preventDefault();
             scale += e.deltaY * -0.001;
-            scale = Math.min(Math.max(0.5, scale), 2);
-            updateCanvas();
+            scale = Math.min(Math.max(0.5, scale), 3);
+            drawCanvas();
         });
 
-        canvas.addEventListener("touchstart", (e) => {
-            if (e.touches.length === 1) {
-                isDragging = true;
-                startX = e.touches[0].clientX - x;
-                startY = e.touches[0].clientY - y;
-            }
-        });
-
-        canvas.addEventListener("touchmove", (e) => {
-            if (isDragging && e.touches.length === 1) {
-                x = e.touches[0].clientX - startX;
-                y = e.touches[0].clientY - startY;
-                updateCanvas();
-            }
-
-            if (e.touches.length === 2) {
-                let touch1 = e.touches[0];
-                let touch2 = e.touches[1];
-                let dist = Math.hypot(touch2.clientX - touch1.clientX, touch2.clientY - touch1.clientY);
-                if (!canvas.lastDist) canvas.lastDist = dist;
-                scale *= dist / canvas.lastDist;
-                scale = Math.min(Math.max(0.5, scale), 2);
-                canvas.lastDist = dist;
-                updateCanvas();
-            }
-        });
-
-        canvas.addEventListener("touchend", () => {
-            isDragging = false;
-            canvas.lastDist = null;
-        });
-
-        download.addEventListener("click", () => {
+        downloadBtn.addEventListener("click", () => {
             const link = document.createElement("a");
-            link.download = "twibbon-HD.png";
-            link.href = canvas.toDataURL("image/png", 1.0);
+            link.download = "twibbon.png";
+            link.href = canvas.toDataURL("image/png");
             link.click();
         });
     </script>
