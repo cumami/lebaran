@@ -105,9 +105,9 @@
         let lastTouchDistance = 0; // Untuk pinch-to-zoom
 
         twibbon.onload = () => {
-            canvas.width = 800;
-            canvas.height = 800;
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
+	    canvas.width = twibbon.width;
+            canvas.height = twibbon.height;
+            ctx.drawImage(twibbon, 0, 0);
         };
 
         document.getElementById("upload").addEventListener("change", function (event) {
