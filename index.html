@@ -3,214 +3,280 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Twibbon Maker</title>
-	<meta name="keywords" content="Twibbon Maker, Twibbon Generator, Online Twibbon, Custom Twibbon, Twibbon Creator, Twibbonize Alternative, Edit Twibbon, Twibbon Online, Free Twibbon, Twibbon Maker HD, Download Twibbon, Twibbon Editor">
-	<meta name="description" content="Buat twibbon online dengan mudah dan cepat menggunakan Twibbon Maker! Upload foto, sesuaikan posisi dengan pinch-to-zoom, dan unduh dalam kualitas HD. Gratis, responsif, dan cocok untuk berbagai perangkat!">
-    <link rel="icon" href="fav.png" />
+    <title>Twibbon Hari BPR Syariah 2026</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- React & Babel -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
     <style>
-        body {
-            background-color: #1a237e;
-            color: #000;
-            font-family: Arial, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            flex-direction: column;
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        .canvas-container canvas { touch-action: none; cursor: move; }
+        .fade-in { animation: fadeIn 0.6s ease-out; }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
-        .container {
-            background: #ffffff;
-            padding: 20px;
+        input[type="range"] {
+            -webkit-appearance: none;
+            background: #e2e8f0;
             border-radius: 10px;
-            box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.3);
-            text-align: center;
-            width: 90%;
-            max-width: 400px;
+            height: 6px;
         }
-        canvas {
-            width: 100%;
-            max-width: 350px;
-            height: auto;
-            border: 1px solid #ddd;
-        }
-        input {
-            display: none;
-        }
-        .buttons {
-            margin-top: 10px;
-        }
-        button {
-            margin: 5px;
-            padding: 10px;
-            border: none;
-            border-radius: 5px;
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            height: 18px;
+            width: 18px;
+            border-radius: 50%;
+            background: #059669;
             cursor: pointer;
-            color: white;
-            font-size: 16px;
-        }
-        .upload-btn { background: #1976d2; }
-        .download-btn { background: #ff9800; }
-        .refresh-btn { background: #4caf50; }
-        button:disabled {
-            background: gray;
-            cursor: not-allowed;
-        }
-	label {
-            display: inline-block;
-            padding: 10px 20px;
-            font-size: 16px;
-            font-weight: bold;
-            color: white;
-            background-color: #007bff;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            margin: 10px;
-            transition: background 0.3s;
-        }
-        label:hover {
-            background-color: #0056b3;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
         }
     </style>
 </head>
-<body>
-	<div class="container">
-       		<div id="canvas-container">
-        		<canvas id="canvas"></canvas>
-    		</div>
-    		<br>
-        <!--<canvas id="twibbonCanvas"></canvas>-->
-        	<input type="file" id="upload" accept="image/*">
-    		<label for="upload">Pilih Foto</label>
-        	<div class="buttons">
-           		<button id="downloadBtn" class="download-btn" onclick="downloadImage()" disabled>Download Twibbon</button>
-           		<button id="refreshBtn" class="refresh-btn" onclick="location.reload()">Refresh</button>
-       		</div><br>
-		© 2025 Created with Love
-	</div>
+<body class="bg-slate-50 text-slate-900">
+    <div id="root"></div>
 
-    <script>
-        const twibbonSrc = "twibbon.png";
-        const canvas = document.getElementById("canvas");
-        const ctx = canvas.getContext("2d");
-        const twibbon = new Image();
-        twibbon.src = twibbonSrc;
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
 
-        let img = new Image();
-        let imgX = 0, imgY = 0;
-        let imgScale = 1;
-        let isDragging = false;
-        let offsetX, offsetY;
-
-        let lastTouchDistance = 0; // Untuk pinch-to-zoom
-
-        twibbon.onload = () => {
-	    canvas.width = twibbon.width;
-            canvas.height = twibbon.height;
-            ctx.drawImage(twibbon, 0, 0);
+        // Komponen Icon Sederhana
+        const Icon = ({ name, size = 20, className = "" }) => {
+            useEffect(() => {
+                if (window.lucide) window.lucide.createIcons();
+            }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
         };
 
-        document.getElementById("upload").addEventListener("change", function (event) {
-            const file = event.target.files[0];
-            if (!file) return;
+        const App = () => {
+            // Kita langsung masukkan path/URL file yang Anda berikan
+            const TWIBBON_IMAGE = "bprs.png"; 
             
-            const reader = new FileReader();
-            reader.onload = function (e) {
-                img.src = e.target.result;
-                img.onload = function () {
-                    let scale = Math.max(canvas.width / img.width, canvas.height / img.height);
-                    imgScale = scale;
-                    imgX = (canvas.width - img.width * imgScale) / 2;
-                    imgY = (canvas.height - img.height * imgScale) / 2;
-                    drawCanvas();
-                    document.getElementById("downloadBtn").disabled = false;
+            const [userImage, setUserImage] = useState(null);
+            const canvasRef = useRef(null);
+            const [scale, setScale] = useState(1);
+            const [position, setPosition] = useState({ x: 0, y: 0 });
+            const [isDragging, setIsDragging] = useState(false);
+            const [dragStart, setDragStart] = useState({ x: 0, y: 0 });
+
+            // Handle Photo Upload
+            const handlePhotoUpload = (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    setUserImage(reader.result);
+                    setScale(1);
+                    setPosition({ x: 0, y: 0 });
                 };
+                reader.readAsDataURL(file);
             };
-            reader.readAsDataURL(file);
-        });
 
-        function drawCanvas() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            ctx.drawImage(img, imgX, imgY, img.width * imgScale, img.height * imgScale);
-            ctx.drawImage(twibbon, 0, 0, canvas.width, canvas.height);
-        }
+            // Drawing Logic
+            useEffect(() => {
+                const canvas = canvasRef.current;
+                if (!canvas) return;
+                const ctx = canvas.getContext('2d');
+                const size = 1080; // Resolusi Tinggi Square
+                canvas.width = size;
+                canvas.height = size;
 
-        // **Desktop: Dragging**
-        document.getElementById("canvas-container").addEventListener("mousedown", function (e) {
-            offsetX = e.offsetX - imgX;
-            offsetY = e.offsetY - imgY;
-            isDragging = true;
-        });
+                const draw = async () => {
+                    ctx.clearRect(0, 0, size, size);
 
-        document.addEventListener("mousemove", function (e) {
-            if (isDragging) {
-                imgX = e.offsetX - offsetX;
-                imgY = e.offsetY - offsetY;
-                drawCanvas();
-            }
-        });
+                    // 1. Gambar Foto User di Layer Bawah
+                    if (userImage) {
+                        const img = new Image();
+                        img.src = userImage;
+                        await new Promise(r => img.onload = r);
+                        
+                        const aspect = img.width / img.height;
+                        let drawW, drawH;
+                        
+                        if (aspect > 1) {
+                            drawH = size * scale;
+                            drawW = drawH * aspect;
+                        } else {
+                            drawW = size * scale;
+                            drawH = drawW / aspect;
+                        }
 
-        document.addEventListener("mouseup", function () {
-            isDragging = false;
-        });
+                        ctx.drawImage(
+                            img, 
+                            (size - drawW) / 2 + position.x, 
+                            (size - drawH) / 2 + position.y, 
+                            drawW, 
+                            drawH
+                        );
+                    } else {
+                        ctx.fillStyle = '#f8fafc';
+                        ctx.fillRect(0, 0, size, size);
+                    }
 
-        // **Zoom dengan scroll di desktop**
-        canvas.addEventListener("wheel", function (e) {
-            e.preventDefault();
-            const scaleAmount = 0.1;
-            imgScale += e.deltaY < 0 ? scaleAmount : -scaleAmount;
-            imgScale = Math.max(0.1, imgScale);
-            drawCanvas();
-        });
+                    // 2. Gambar Frame Twibbon di Layer Atas
+                    const frame = new Image();
+                    frame.src = TWIBBON_IMAGE;
+                    // Note: Jika file JPG tidak transparan, foto user akan tertutup.
+                    // Idealnya file ini adalah PNG transparan.
+                    await new Promise(r => frame.onload = r);
+                    ctx.drawImage(frame, 0, 0, size, size);
+                };
 
-        // **Mobile: Dragging dengan sentuhan**
-        canvas.addEventListener("touchstart", function (e) {
-            if (e.touches.length === 1) {
-                let touch = e.touches[0];
-                offsetX = touch.clientX - imgX;
-                offsetY = touch.clientY - imgY;
-                isDragging = true;
-            }
-            if (e.touches.length === 2) {
-                lastTouchDistance = getTouchDistance(e.touches);
-            }
-        });
+                draw();
+            }, [userImage, scale, position]);
 
-        canvas.addEventListener("touchmove", function (e) {
-            e.preventDefault();
-            if (e.touches.length === 1 && isDragging) {
-                let touch = e.touches[0];
-                imgX = touch.clientX - offsetX;
-                imgY = touch.clientY - offsetY;
-                drawCanvas();
-            }
-            if (e.touches.length === 2) {
-                let newTouchDistance = getTouchDistance(e.touches);
-                let scaleAmount = newTouchDistance / lastTouchDistance;
-                imgScale *= scaleAmount;
-                imgScale = Math.max(0.1, imgScale);
-                lastTouchDistance = newTouchDistance;
-                drawCanvas();
-            }
-        });
+            // Drag Logic
+            const handleStart = (e) => {
+                if (!userImage) return;
+                setIsDragging(true);
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                setDragStart({ x: clientX - position.x, y: clientY - position.y });
+            };
 
-        canvas.addEventListener("touchend", function () {
-            isDragging = false;
-            lastTouchDistance = 0;
-        });
+            const handleMove = (e) => {
+                if (!isDragging) return;
+                const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+                const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+                setPosition({ x: clientX - dragStart.x, y: clientY - dragStart.y });
+            };
 
-        function getTouchDistance(touches) {
-            let dx = touches[0].clientX - touches[1].clientX;
-            let dy = touches[0].clientY - touches[1].clientY;
-            return Math.sqrt(dx * dx + dy * dy);
-        }
+            const handleEnd = () => setIsDragging(false);
 
-        function downloadImage() {
-            const link = document.createElement("a");
-            link.download = "Twibbon-Lebaran.png";
-            link.href = canvas.toDataURL("image/png");
-            link.click();
-        }
+            const download = () => {
+                const canvas = canvasRef.current;
+                const link = document.createElement('a');
+                link.download = `twibbon-bprs-2026.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            };
+
+            return (
+                <div className="min-h-screen flex flex-col">
+                    {/* Header */}
+                    <nav className="bg-white border-b px-6 h-16 flex items-center shadow-sm">
+                        <div className="flex items-center gap-2">
+                            <div className="bg-emerald-600 p-2 rounded-lg text-white">
+                                <Icon name="camera" size={20} />
+                            </div>
+                            <span className="text-lg font-extrabold text-slate-800 tracking-tight">
+                                BPRS<span className="text-emerald-600">Twibbon</span>
+                            </span>
+                        </div>
+                    </nav>
+
+                    <main className="flex-grow max-w-5xl mx-auto w-full p-4 md:p-8 flex flex-col lg:flex-row gap-10 items-center lg:items-start justify-center">
+                        
+                        {/* Area Editor */}
+                        <div className="w-full max-w-[500px] fade-in">
+                            <div className="bg-white p-4 rounded-[2rem] shadow-2xl border border-slate-100">
+                                <div 
+                                    className="relative aspect-square w-full rounded-2xl overflow-hidden bg-slate-100 canvas-container"
+                                    onMouseDown={handleStart} onMouseMove={handleMove} onMouseUp={handleEnd} onMouseLeave={handleEnd}
+                                    onTouchStart={handleStart} onTouchMove={handleMove} onTouchEnd={handleEnd}
+                                >
+                                    <canvas ref={canvasRef} className="w-full h-full" />
+                                    
+                                    {!userImage && (
+                                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-white/60 backdrop-blur-sm pointer-events-none text-center p-6">
+                                            <div className="bg-emerald-50 p-5 rounded-full mb-4 text-emerald-600 shadow-sm">
+                                                <Icon name="image" size={40} />
+                                            </div>
+                                            <p className="font-bold text-slate-700">Selamat Hari BPR Syariah!</p>
+                                            <p className="text-sm text-slate-500 mt-1">Silakan unggah foto Anda untuk memulai</p>
+                                        </div>
+                                    )}
+                                </div>
+                                
+                                {userImage && (
+                                    <div className="mt-6 space-y-4 px-2">
+                                        <div className="flex items-center justify-between text-[10px] font-black uppercase tracking-widest text-slate-400">
+                                            <span className="flex items-center gap-1"><Icon name="move" size={12}/> Geser Foto</span>
+                                            <span>Zoom</span>
+                                        </div>
+                                        <div className="flex items-center gap-4">
+                                            <Icon name="minus" size={16} className="text-slate-300" />
+                                            <input 
+                                                type="range" min="0.5" max="3" step="0.01" 
+                                                value={scale} onChange={e => setScale(parseFloat(e.target.value))} 
+                                                className="flex-grow cursor-pointer"
+                                            />
+                                            <Icon name="plus" size={16} className="text-slate-300" />
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Area Kontrol */}
+                        <div className="w-full lg:max-w-md space-y-6 fade-in">
+                            <div className="bg-white p-8 rounded-[2rem] shadow-xl border border-slate-100">
+                                <h1 className="text-2xl font-black text-slate-900 mb-2">Hari BPR Syariah</h1>
+                                <p className="text-slate-500 mb-8 leading-relaxed">07 Maret 2026 — Peluang dan Tantangan di Era Digitalisasi.</p>
+                                
+                                <div className="space-y-6">
+                                    {/* Tombol Upload */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-3">1. Unggah Foto Anda</label>
+                                        <label className="relative group flex items-center justify-center w-full py-4 border-2 border-dashed border-emerald-200 bg-emerald-50 rounded-2xl cursor-pointer hover:bg-emerald-100 transition-all">
+                                            <div className="flex items-center gap-3 text-emerald-700 font-bold">
+                                                <Icon name="upload" size={20} />
+                                                <span>{userImage ? "Ganti Foto" : "Pilih File Gambar"}</span>
+                                            </div>
+                                            <input type="file" accept="image/*" onChange={handlePhotoUpload} className="absolute inset-0 opacity-0 cursor-pointer" />
+                                        </label>
+                                    </div>
+
+                                    {/* Tombol Download */}
+                                    <div>
+                                        <label className="block text-sm font-bold text-slate-700 mb-3">2. Selesaikan</label>
+                                        <button 
+                                            onClick={download}
+                                            disabled={!userImage}
+                                            className={`w-full py-5 rounded-2xl font-black flex items-center justify-center gap-3 transition-all shadow-lg ${
+                                                userImage 
+                                                ? 'bg-emerald-600 text-white hover:bg-emerald-700 hover:scale-[1.02] active:scale-95 shadow-emerald-200' 
+                                                : 'bg-slate-100 text-slate-400 cursor-not-allowed shadow-none'
+                                            }`}
+                                        >
+                                            <Icon name="download" />
+                                            Download Twibbon
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Info Box */}
+                            <div className="bg-slate-900 p-6 rounded-[2rem] text-white shadow-2xl">
+                                <div className="flex gap-4">
+                                    <div className="p-3 bg-white/10 rounded-xl h-fit">
+                                        <Icon name="info" className="text-emerald-400" />
+                                    </div>
+                                    <div>
+                                        <h4 className="font-bold text-sm mb-1">Penting:</h4>
+                                        <p className="text-xs text-slate-400 leading-relaxed">
+                                            Aplikasi ini bekerja paling baik dengan file latar belakang PNG transparan. 
+                                            Jika gambar Anda memiliki latar belakang hitam di tengah, pastikan untuk mengubahnya ke format transparan (.png) terlebih dahulu.
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+
+                    <footer className="py-12 text-center text-slate-400 text-xs font-bold tracking-widest uppercase">
+                        © 2026 BPR SYARIAH INDONESIA • DIGITAL CAMPAIGN
+                    </footer>
+                </div>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
     </script>
 </body>
 </html>
